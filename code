@@ -1,0 +1,282 @@
+protein_df = pd.read_csv("protein_embeddings_4.csv", index_col=0)
+X = protein_df.values  # Embedding matrix [num_protein x embedding_dim]
+
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=0.90)  # %95 varyans açıklanacak şekilde
+X_pca = pca.fit_transform(X_scaled)
+
+
+print(f"Orijinal boyut: {X.shape[1]}")
+print(f"PCA sonrası boyut: {X_pca.shape[1]}")
+print(f"Açıklanan varyans oranı: {pca.explained_variance_ratio_.sum():.2f}")
+protein_df = pd.read_csv("protein_embeddings_4.csv", index_col=0)
+
+id_list = ["P00519", "P42684", "P31749", "P31751", "Q9UM73", "P10275", "P10398", "Q9Y5X1",
+    "Q9H160", "P10415", "P20749", "P41182", "Q92830", "O00569", "P11274", "Q13489",
+    "P15056", "Q9BXL7", "P22681", "Q13191", "Q9ULV4", "P24385", "P30279", "P30281",
+    "Q9NZQ7", "P11912", "P60953", "P11802", "Q00534", "P49715", "Q15744", "P07333",
+    "P35221", "P35222", "Q9NQC7", "Q92466", "P35638", "Q13206", "P17844", "P26196",
+    "P26358", "Q9Y6K1", "P15923", "P00533", "Q14240", "P28324", "Q09472", "P04626",
+    "P21860", "P11308", "P50549", "P41161", "P41162", "Q9Y6G6", "P43268", "P41160",
+    "P41212", "Q01844", "Q16421", "Q15910", "Q13158", "O15360", "Q00597", "Q9BXW9",
+    "Q9HB96", "Q9NPI8", "O15287", "Q969H0", "P16280", "P11362", "P21802", "P22607",
+    "P36888", "P01100", "Q92954", "Q9H334", "P15976", "P23769", "P29992", "P50148",
+    "P63092", "Q9N2T5", "P84243", "Q15011", "Q9Y5J3", "P68431", "P31270", "P31276",
+    "P31269", "Q01534", "Q99581", "P31273", "P35453", "P01112", "O75874", "P48735",
+    "P08069", "Q03267", "P16871", "Q15306", "P23458", "O60674", "P52333", "P05412",
+    "P17535", "Q92794", "P29375", "O15550", "P35968", "P10721", "P01116", "Q03164",
+    "P06239", "P25801", "P25791", "P12980", "Q00987", "O15151", "Q13465", "P08581",
+    "Q03111", "P55198", "P55196", "P40238", "P15941", "P10242", "P01106", "P12524",
+    "P04198", "Q99836", "Q9Y4I1", "P35579", "Q15596", "Q13772", "P46531", "Q04721",
+    "P06748", "P43355", "P01111", "Q96L73", "P35658", "P52948", "Q13527", "Q8IVG9",
+    "Q86YC2", "P23760", "Q02548", "P40424", "Q99684", "P42336", "P27986", "P11309", "P25054", "O14497", "Q13315", "Q13535", "O15169", "Q92560", "Q99728", "P54132",
+    "P36894", "P38398", "P51587", "Q9NPI2", "Q9BX63", "Q14790", "Q99593", "P12830",
+    "Q9NYV4", "P38936", "P46527", "P42771", "P42773", "P49715", "O14757", "O96017",
+    "Q92793", "Q6UUV9", "P35221", "P19022", "Q13616", "Q13618", "P99999", "Q9NQC7",
+    "P53355", "Q92466", "Q9UPY3", "Q8TDP1", "Q9Y6K1", "P29320", "P54756", "Q15375",
+    "P18074", "P19124", "P78316", "P32643", "O14620", "Q15910", "Q9Y236", "Q8NB91",
+    "Q9NW38", "P25445", "Q969H0", "P07954", "Q8NE84", "P51654", "P20823", "Q96NY6",
+    "P41229", "O15550", "Q14145", "O60333", "Q6MZT1", "O95835", "Q9NRM7", "Q9Y2Y0",
+    "P45985", "Q13233", "P61244", "O00255", "P40692", "P49959", "P43246", "P20585",
+    "P52701", "Q9UIF7", "O60934", "P21359", "P35240", "Q16236", "P46531", "P04150",
+    "Q86YC2", "O60260", "Q02548", "Q8IW22", "P54277", "P54278", "O15297", "P14222",
+    "P10644", "P31377", "Q13635", "Q96L24", "P60484", "Q16827", "Q96PN2", "Q92878",
+    "Q92831", "O43502", "O75771", "Q92698", "P06400", "P28749", "Q08999", "O94761",
+    "P62745", "Q96B50", "Q8WUF5", "Q68DV7", "P51812", "Q13761", "Q9H4B6", "P0C6T7",
+    "Q9H654", "P21912", "Q99643", "O14521", "Q9BYW2", "Q15796", "P84022", "Q13485",
+    "P51532", "Q9C0A0", "Q969V2", "O15524", "Q96LW4", "O43791", "Q8N3U4", "Q15831",
+    "Q9UMX1", "Q8N0S2", "P15884", "Q6N021", "P36897", "P37173", "Q04724", "Q92764",
+    "Q9NPA4", "P04637", "Q92574", "P49815", "P40337", "P19544", "P23025", "Q01831",
+    "Q9Y4Y3", "P36896", "Q8N399", "Q6UB99", "Q8IXJ9", "P18846", "Q5JRA6", "P46100"]
+binary_labels = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+print(len(id_list))
+print(len(binary_labels))
+
+# Eşleştirme sözlüğü oluştur
+label_dict = dict(zip(id_list, binary_labels))
+
+# Proteinlerin UniProt ID'lerini index olarak kullandığını varsayıyorum
+protein_df["Label"] = protein_df.index.map(label_dict)
+
+# NaN değerleri olan satırları kaldır
+protein_df.dropna(subset=["Label"], inplace=True)
+
+print(protein_df.head())
+print(protein_df['Label'].value_counts())
+print(protein_df.shape)  # 300 satır olmalı
+print(protein_df.head())
+y = protein_df["Label"].values
+
+# Ensure X_pca is aligned with the filtered protein_df
+# Assuming the order of rows in X_pca corresponds to the original protein_df index
+# We need to filter X_pca based on the index of the filtered protein_df
+filtered_indices = protein_df.index
+original_indices = pd.Index(pd.read_csv("protein_embeddings_4.csv", index_col=0).index)
+rows_to_keep = original_indices.get_indexer(filtered_indices)
+X_pca_filtered = X_pca[rows_to_keep]
+
+
+from sklearn.model_selection import train_test_split
+
+#X_train, X_test, y_train, y_test = train_test_split(
+ #   X_pca_filtered, y, test_size=0.3, stratify=y, random_state=42
+#)
+# Artık hem train hem testte iki sınıf da benzer oranda bulunur!
+# Sonuçları depolamak için boş listeler
+accuracy_scores = []
+f1_scores = []
+auc_scores = []
+conf_matrices = []
+reports = []
+roc_curves = []
+
+for i in range(15):
+    print(f"\n--- Training Run {i+1} ---")
+    # Train-test split (her seferinde farklı random_state)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X_pca_filtered, y, test_size=0.3, stratify=y, random_state=42 + i
+    )
+    # Modeli baştan kur
+    model = tf.keras.Sequential([
+        tf.keras.layers.Input(shape=(X_train.shape[1],)),
+        tf.keras.layers.Dense(64, activation='relu'),
+        tf.keras.layers.Dense(8, activation='relu'),
+        tf.keras.layers.Dense(1, activation='sigmoid')
+    ])
+    optimizer = PCAGroupAdam(learning_rate=0.002)
+    #optimizer = tf.keras.optimizers.RMSprop(learning_rate=0.015)
+    model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+    model.fit(X_train, y_train, validation_data=(X_test, y_test),
+              epochs=30, batch_size=16, verbose=0)
+    
+    # Tahminler
+    y_pred_prob = model.predict(X_test).flatten()
+    y_pred = (y_pred_prob > 0.5).astype(int)
+    
+    # Metrikler
+    acc = accuracy_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    cm = confusion_matrix(y_test, y_pred)
+    report = classification_report(y_test, y_pred, output_dict=True)
+    fpr, tpr, _ = roc_curve(y_test, y_pred_prob)
+    roc_auc = auc(fpr, tpr)
+    
+    # Kaydet
+    accuracy_scores.append(acc)
+    f1_scores.append(f1)
+    auc_scores.append(roc_auc)
+    conf_matrices.append(cm)
+    reports.append(report)
+    roc_curves.append((fpr, tpr, roc_auc))
+    
+    # ROC eğrisi çizimi
+    plt.plot(fpr, tpr, lw=2, alpha=0.6, label=f'Run {i+1} (AUC={roc_auc:.2f})')
+    print(f"Acc: {acc:.3f} | F1: {f1:.3f} | ROC-AUC: {roc_auc:.3f}")
+
+plt.plot([0, 1], [0, 1], 'k--', lw=1, label='Random')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curves of 15 Runs')
+plt.legend(loc='lower right')
+plt.grid()
+plt.show()
+
+# Ortalama ve sapmalar
+print("\n---- Overall Results ----")
+print(f"Accuracy: {np.mean(accuracy_scores):.3f} ± {np.std(accuracy_scores):.3f}")
+print(f"F1-score: {np.mean(f1_scores):.3f} ± {np.std(f1_scores):.3f}")
+print(f"ROC-AUC: {np.mean(auc_scores):.3f} ± {np.std(auc_scores):.3f}")
+
+# Ortalama confusion matrix
+mean_cm = np.mean(conf_matrices, axis=0)
+print("Mean Confusion Matrix over 5 runs:\n", np.round(mean_cm, 2))
+import shap
+
+explainer = shap.Explainer(model, X_pca_filtered)
+shap_values = explainer(X_pca_filtered)
+shap.summary_plot(shap_values, X_pca_filtered, feature_names=[f'PC{i+1}' for i in range(X_pca_filtered.shape[1])])
+pca_components = pca.components_
+protein_shap_values = np.dot(shap_values.values, pca_components)
+mean_protein_shap = np.mean(np.abs(protein_shap_values), axis=0)
+important_dims = np.argsort(mean_protein_shap)[::-1][:10]
+print("En önemli embedding boyutları:", important_dims)
+import pandas as pd
+import numpy as np
+
+# X_emb = orijinal embedding matrisin (protein sayısı x embedding boyutu)
+# proteins = protein isim/id vektörün
+# labels = protein etiketlerin (0/1 veya string label)
+
+selected_dims = [89, 272, 5, 262, 280, 216, 206, 146, 124, 150]
+
+# DataFrame olarak göster
+df = pd.DataFrame(protein_df.values[:, selected_dims], columns=[f"Dim_{d}" for d in selected_dims])
+df["ProteinID"] = protein_df.index.values  # protein isim/id
+df["Label"] = protein_df["Label"].values       # kanser/koruyucu vs.
+
+# Her protein için seçili boyutlar
+print(df)
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+for dim in [89, 272, 5, 262, 280, 216, 206, 146, 124, 150]:
+    plt.figure()
+    sns.boxplot(x="Label", y=f"Dim_{dim}", data=df)
+    plt.title(f"Embedding {dim} Dağılımı (0: Koruyucu, 1: Kanser Geni)")
+    plt.show()
+import shap
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+# Load original data and scale it
+protein_df_original = pd.read_csv("protein_embeddings_4.csv", index_col=0)
+X_original = protein_df_original.values
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X_original)
+
+# Ensure X_scaled is filtered to match the filtered protein_df
+filtered_indices = protein_df.index
+original_indices = pd.Index(pd.read_csv("protein_embeddings_4.csv", index_col=0).index)
+rows_to_keep = original_indices.get_indexer(filtered_indices)
+X_scaled_filtered = X_scaled[rows_to_keep]
+
+# Re-calculate SHAP values using the original scaled data for plotting original dimensions
+# Assuming 'model' is already trained on the PCA-transformed data X_train
+# We need an explainer that can work with the original features.
+# Since the model was trained on PCA features, we need a way to map original features to PCA features for the explainer.
+# A common way is to use a KernelExplainer with a background dataset transformed by PCA.
+# However, a simpler approach for visualization purposes with dependence plots on original features
+# is to create an explainer for the original features and the trained model. This might not be theoretically
+# perfect as the model wasn't directly trained on original features, but can provide insights.
+
+# Let's use a sample of the original scaled data as the background dataset for KernelExplainer
+# Note: This can still be computationally intensive
+background_data = shap.utils.sample(X_scaled_filtered, 50) # Sample 50 data points as background
+
+# Use the existing model trained on PCA features
+# We need a function that takes original features and outputs the model's prediction
+def predict_on_original(x):
+    # Apply the same scaling and PCA transformation as done during training
+    x_scaled = scaler.transform(x)
+    x_pca = pca.transform(x_scaled)
+    return model.predict(x_pca)
+
+# Create a Kernel explainer with the original scaled data and the prediction function
+explainer_original_dims = shap.KernelExplainer(predict_on_original, background_data)
+
+# Calculate SHAP values for the original scaled data
+# Note: This can take a significant amount of time depending on the size of X_scaled_filtered
+print("Calculating SHAP values for original dimensions...")
+shap_values_original_dims = explainer_original_dims.shap_values(X_scaled_filtered, nsamples=100)
+print("SHAP value calculation complete.")
+
+# Ensure shap_values_original_dims is a numpy array with the correct shape for plotting
+# For a single output model, shap_values typically returns a list containing one array.
+# We need to access this array and ensure it's treated as a numpy array with shape (n_samples, n_features).
+if isinstance(shap_values_original_dims, list) and len(shap_values_original_dims) == 1:
+    shap_values_for_plot = np.asarray(shap_values_original_dims[0])
+else:
+    # If it's not a list of one array, assume it's already the array, but convert to numpy
+    shap_values_for_plot = np.asarray(shap_values_original_dims)
+
+# The selected_dims are for the original embedding dimensions.
+selected_dims = [89, 272, 5, 262, 280, 216, 206, 146, 124, 150]
+
+# Plot dependence plots for the selected original dimensions
+feature_names_original = [f'Dim_{i}' for i in range(X_scaled_filtered.shape[1])]
+
+for dim_index in selected_dims:
+     shap.dependence_plot(
+        dim_index,
+        shap_values_for_plot, # Use the prepared SHAP values array
+        X_scaled_filtered,
+        feature_names=feature_names_original,
+        interaction_index=None # Explicitly set interaction_index to None
+    )
+
+
+# The rest of the code for identifying important original dimensions based on PCA components can remain
+# as it was already working and providing valuable information.
+# Assuming shap_values from the previous calculation on PCA data is still available
+# If not, you might need to re-calculate shap_values on X_pca_filtered here as well
+# explainer_pca = shap.Explainer(model, X_pca_filtered)
+# shap_values = explainer_pca(X_pca_filtered)
+# Re-calculate shap_values on X_pca_filtered to ensure it's available if needed for the next step
+explainer_pca = shap.Explainer(model, X_pca_filtered)
+shap_values = explainer_pca(X_pca_filtered)
+
+
+pca_components = pca.components_
+protein_shap_values = np.dot(shap_values.values, pca_components) # Use shap_values from PCA
+mean_protein_shap = np.mean(np.abs(protein_shap_values), axis=0)
+important_dims = np.argsort(mean_protein_shap)[::-1][:10]
+print("En önemli embedding boyutları:", important_dims)
