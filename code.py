@@ -1,3 +1,16 @@
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix, classification_report, roc_curve, auc
+import tensorflow as tf
+import shap
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+
+
 protein_df = pd.read_csv("protein_embeddings_4.csv", index_col=0)
 X = protein_df.values  # Embedding matrix [num_protein x embedding_dim]
 
